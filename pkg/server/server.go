@@ -8,13 +8,13 @@ import (
 )
 
 type Server struct {
-	Ctx context.Context
+	ctx context.Context
 	Address string
 }
 
 func NewServer(ctx context.Context, address string) *Server{
 	return &Server{
-		Ctx: ctx,
+		ctx: ctx,
 		Address: address,
 	}
 }
