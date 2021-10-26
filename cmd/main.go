@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	_ "github.com/lib/pq"
 	"log"
 	"restaurant/server"
@@ -16,18 +17,12 @@ const (
 )
 
 func main(){
-	srv:= server.NewServer(context.Background(), ":8080")
+	baseUrl:= fmt.Sprintf("host= %s port= %d user= %s password= %s dbname= %s sslmode=disable", host,port,user,password,dbname)
 
-	//sqcon:=fmt.Sprintf("host= %s port= %d user= %s password= %s dbname= %s sslmode=disable", host,port,user,password,dbname)
-	//db, err:= base.NewDishRepo(sql.Open("postgres",sqcon))
-	//if err != nil{
-	//	log.Fatal("Error while open DB")
-	//}
-	//defer db.Db.Close()
+	srv:= server.NewServer(context.Background(), ":8080", baseUrl)
 
 	er:=srv.Run()
 	if er != nil{
 		log.Println("Error while running the server", er)
 	}
-
 }
