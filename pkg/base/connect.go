@@ -16,12 +16,12 @@ func NewDishRepo(db *sql.DB) *DishRepo{
 	return &DishRepo{Db: db}
 }
 
-func AddNewValue(dish *meals.Dish, db *sql.DB) string{
+func (base *DishRepo) AddNewValue(dish *meals.Dish) string{
 	searchQuery:= `SELECT id FROM meals WHERE id=$1`
 
-	if db.QueryRow(searchQuery, dish.ID).Scan(&dish.ID) == sql.ErrNoRows {
+	if base.Db.QueryRow(searchQuery, dish.ID).Scan(&dish.ID) == sql.ErrNoRows {
 		insertValues := `INSERT INTO meals (id, description, composition, price) VALUES ($1, $2, $3, $4)`
-		_, er := db.Exec(insertValues, dish.ID, dish.Description, dish.Composition, dish.Price)
+		_, er := base.Db.Exec(insertValues, dish.ID, dish.Description, dish.Composition, dish.Price)
 		if er != nil {
 			return "Error while adding dish"
 		}
@@ -30,26 +30,26 @@ func AddNewValue(dish *meals.Dish, db *sql.DB) string{
 	return fmt.Sprintf("Dish with id=%d already exist", dish.ID)
 }
 
-func DeleteValue(id string, db *sql.DB) string{
+func (base *DishRepo) DeleteValue(id string) string{
 	delValue:=`DELETE FROM meals WHERE id=$1`
-	_, er:=db.Exec(delValue, id)
+	_, er:=base.Db.Exec(delValue, id)
 	if er!= nil{
 		return "Error while deleting dish"
 	}
 	return "Successfully deleted"
 }
 
-func UpdateValue(dish *meals.Dish, db *sql.DB) string{
+func (base *DishRepo) UpdateValue(dish *meals.Dish) string{
 	updValue:= `UPDATE meals SET description=$1, composition=$2, price=$3 WHERE id=$4`
-	_, er:=db.Exec(updValue, dish.Description, dish.Composition, dish.Price, dish.ID)
+	_, er:=base.Db.Exec(updValue, dish.Description, dish.Composition, dish.Price, dish.ID)
 	if er != nil{
 		return "Error while updating the dish"
 	}
 	return fmt.Sprintf("Successfully updated dish #%d", dish.ID)
 }
 
-func GetMenu(db *sql.DB) ([]meals.Dish, error){
-	rows, er := db.Query("SELECT * FROM meals ORDER BY id")
+func (base *DishRepo) GetMenu() ([]meals.Dish, error){
+	rows, er := base.Db.Query("SELECT * FROM meals ORDER BY id")
 	if er != nil {
 		log.Fatal("DB operation error")
 	}
