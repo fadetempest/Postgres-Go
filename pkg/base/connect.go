@@ -8,33 +8,15 @@ import (
 	"restaurant/meals"
 )
 
-const (
-	host = "localhost"
-	port = 5432
-	user = "postgres"
-	password = "1488qwerdf"
-	dbname = "restaurant"
-)
-
 type DishRepo struct {
 	Db *sql.DB
 }
 
-func NewDishRepo(db *sql.DB, err error) (*DishRepo, error){
-	if err != nil{
-		return nil, err
-	}
-	return &DishRepo{Db: db}, nil
+func NewDishRepo(db *sql.DB) *DishRepo{
+	return &DishRepo{Db: db}
 }
 
-func AddNewValue(dish *meals.Dish) string{
-	sqcon:=fmt.Sprintf("host= %s port= %d user= %s password= %s dbname= %s sslmode=disable", host,port,user,password,dbname)
-	db, err:= sql.Open("postgres",sqcon)
-	if err != nil{
-		log.Fatal("Error while open DB")
-	}
-	defer db.Close()
-
+func AddNewValue(dish *meals.Dish, db *sql.DB) string{
 	searchQuery:= `SELECT id FROM meals WHERE id=$1`
 
 	if db.QueryRow(searchQuery, dish.ID).Scan(&dish.ID) == sql.ErrNoRows {
@@ -48,14 +30,7 @@ func AddNewValue(dish *meals.Dish) string{
 	return fmt.Sprintf("Dish with id=%d already exist", dish.ID)
 }
 
-func DeleteValue(id string) string{
-	sqcon:=fmt.Sprintf("host= %s port= %d user= %s password= %s dbname= %s sslmode=disable", host,port,user,password,dbname)
-	db, err:= sql.Open("postgres",sqcon)
-	if err != nil{
-		log.Fatal("Error while open DB")
-	}
-	defer db.Close()
-
+func DeleteValue(id string, db *sql.DB) string{
 	delValue:=`DELETE FROM meals WHERE id=$1`
 	_, er:=db.Exec(delValue, id)
 	if er!= nil{
@@ -64,14 +39,7 @@ func DeleteValue(id string) string{
 	return "Successfully deleted"
 }
 
-func UpdateValue(dish *meals.Dish) string{
-	sqcon:=fmt.Sprintf("host= %s port= %d user= %s password= %s dbname= %s sslmode=disable", host,port,user,password,dbname)
-	db, err:= sql.Open("postgres",sqcon)
-	if err != nil{
-		log.Fatal("Error while open DB")
-	}
-	defer db.Close()
-
+func UpdateValue(dish *meals.Dish, db *sql.DB) string{
 	updValue:= `UPDATE meals SET description=$1, composition=$2, price=$3 WHERE id=$4`
 	_, er:=db.Exec(updValue, dish.Description, dish.Composition, dish.Price, dish.ID)
 	if er != nil{
@@ -80,31 +48,24 @@ func UpdateValue(dish *meals.Dish) string{
 	return fmt.Sprintf("Successfully updated dish #%d", dish.ID)
 }
 
-func GetMenu() ([]meals.Dish, error){
-	sqcon:=fmt.Sprintf("host= %s port= %d user= %s password= %s dbname= %s sslmode=disable", host,port,user,password,dbname)
-	db, err:= sql.Open("postgres",sqcon)
-	if err != nil{
-		log.Fatal("Error while open DB")
-	}
-	defer db.Close()
-
-	rows, er:= db.Query("SELECT * FROM meals ORDER BY id")
-	if er!=nil{
+func GetMenu(db *sql.DB) ([]meals.Dish, error){
+	rows, er := db.Query("SELECT * FROM meals ORDER BY id")
+	if er != nil {
 		log.Fatal("DB operation error")
 	}
 	defer rows.Close()
 
 	var dishes []meals.Dish
 
-	for rows.Next(){
+	for rows.Next() {
 		var dish meals.Dish
-		if scanEr := rows.Scan(&dish.ID, &dish.Description, &dish.Composition, &dish.Price); scanEr != nil{
+		if scanEr := rows.Scan(&dish.ID, &dish.Description, &dish.Composition, &dish.Price); scanEr != nil {
 			return dishes, scanEr
 		}
-		dishes=append(dishes, dish)
+		dishes = append(dishes, dish)
 	}
-	if rowErr := rows.Err(); rowErr != nil{
-		return dishes,rowErr
+	if rowErr := rows.Err(); rowErr != nil {
+		return dishes, rowErr
 	}
 	return dishes, nil
 }
