@@ -5,11 +5,16 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"restaurant/tools"
 )
 
 type Server struct {
 	ctx context.Context
 	Address string
+}
+
+type Methods struct {
+
 }
 
 func NewServer(ctx context.Context, address string) *Server{
@@ -21,7 +26,10 @@ func NewServer(ctx context.Context, address string) *Server{
 
 func (s *Server) Run() error{
 	r:= mux.NewRouter()
-	r.HandleFunc("/", menu)
+	r.HandleFunc("/menu", tools.Menu)
+	r.HandleFunc("/add", tools.AddMeal)
+	r.HandleFunc("/delete/{id}", tools.DelMeal)
+	r.HandleFunc("/update", tools.UpdateMeal)
 	srv:=&http.Server{
 		Addr: s.Address,
 		Handler: r,
@@ -30,6 +38,3 @@ func (s *Server) Run() error{
 	return srv.ListenAndServe()
 }
 
-func menu(w http.ResponseWriter, r *http.Request){
-	w.Write([]byte("Hello world"))
-}
