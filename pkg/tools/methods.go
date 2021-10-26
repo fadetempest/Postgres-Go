@@ -27,7 +27,7 @@ func (m *Methods) AddMeal(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusConflict)
 		w.Write([]byte("Error while reading request"))
 	}
-	coded, jerr:= json.Marshal(base.AddNewValue(&dish, m.Store.Db))
+	coded, jerr:= json.Marshal(m.Store.AddNewValue(&dish))
 	if jerr!=nil{
 		w.WriteHeader(http.StatusConflict)
 	}
@@ -36,7 +36,7 @@ func (m *Methods) AddMeal(w http.ResponseWriter, r *http.Request){
 }
 
 func (m *Methods) DelMeal(w http.ResponseWriter, r *http.Request){
-	coded, jerr:= json.Marshal(base.DeleteValue(r.URL.Path[8:], m.Store.Db))
+	coded, jerr:= json.Marshal(m.Store.DeleteValue(r.URL.Path[8:]))
 	if jerr!=nil{
 		w.WriteHeader(http.StatusConflict)
 	}
@@ -56,7 +56,7 @@ func (m *Methods) UpdateMeal(w http.ResponseWriter, r *http.Request){
 		w.Write([]byte("Error while reading request"))
 	}
 	w.Header().Set("Content-Type", "application/json")
-	coded, jerr:= json.Marshal(base.UpdateValue(&dish, m.Store.Db))
+	coded, jerr:= json.Marshal(m.Store.UpdateValue(&dish))
 	if jerr!=nil{
 		w.WriteHeader(http.StatusConflict)
 	}
@@ -65,7 +65,7 @@ func (m *Methods) UpdateMeal(w http.ResponseWriter, r *http.Request){
 }
 
 func (m *Methods) Menu(w http.ResponseWriter, r *http.Request){
-	allMenu, err:=base.GetMenu(m.Store.Db)
+	allMenu, err:=m.Store.GetMenu()
 	if err != nil{
 		w.WriteHeader(http.StatusBadRequest)
 	}
